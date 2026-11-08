@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>流光下载器</title>
+  <script>
+    (() => {
+      try {
+        const forced = new URLSearchParams(location.search).get('theme');
+        const stored = forced || localStorage.getItem('lg-theme') || 'dark';
+        const mode = ['dark', 'light', 'system'].includes(stored) ? stored : 'dark';
+        const effective = mode === 'system'
+          ? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+          : mode;
+        document.documentElement.dataset.theme = effective;
+        document.documentElement.dataset.themeMode = mode;
+      } catch (_) {
+        document.documentElement.dataset.theme = 'dark';
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <svg class="svg-sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="ico-grad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#66e4ff"/>
+        <stop offset=".55" stop-color="#6f9bff"/>
+        <stop offset="1" stop-color="#b08cff"/>
+      </linearGradient>
+    </defs>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M9.4 14.6 14.6 9.4"/><path d="M7.2 17.8 5.9 19a3.5 3.5 0 0 1-5-5l3-3a3.5 3.5 0 0 1 5 0"/><path d="m16.8 6.2 1.3-1.2a3.5 3.5 0 0 1 5 5l-3 3a3.5 3.5 0 0 1-5 0"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7.2 10.2 4.8 4.8 4.8-4.8"/><path d="M4.5 20h15"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></symbol>
+    <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.2M12 19.8V22M2 12h2.2M19.8 12H22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M19.1 4.9l-1.6 1.6M6.5 17.5l-1.6 1.6"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15.2A8.4 8.4 0 0 1 8.8 4a8.5 8.5 0 1 0 11.2 11.2Z"/></symbol>
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-all" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></symbol>
+    <symbol id="i-activity" viewBox="0 0 24 24"><path d="M2.5 12h4l2.2-6.5L13 18l2.4-6H21.5"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4.5" width="4" height="15" rx="1.4"/><rect x="14" y="4.5" width="4" height="15" rx="1.4"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.3v13.4a1 1 0 0 0 1.52.85l10.2-6.7a1 1 0 0 0 0-1.7L9.52 4.45A1 1 0 0 0 8 5.3Z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m4.5 12.5 5 5 10-11"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3.5 7.8A2.3 2.3 0 0 1 5.8 5.5h4l2 2.4h6.4a2.3 2.3 0 0 1 2.3 2.3v6.5a2.3 2.3 0 0 1-2.3 2.3H5.8a2.3 2.3 0 0 1-2.3-2.3Z"/><path d="M3.8 10h16.4"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 2.8h7.3L19 8.5v12.7H6Z"/><path d="M13 2.8v6h6"/></symbol>
+    <symbol id="i-film" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M7 4.5v15M17 4.5v15M3 9h4M3 15h4M17 9h4M17 15h4"/><path d="m10.5 9 4 3-4 3Z"/></symbol>
+    <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V6.3l10-2v11.2"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4 18 5.2-5.2a2 2 0 0 1 2.8 0l2.2 2.2 1.6-1.6a2 2 0 0 1 2.8 0L21 16"/></symbol>
+    <symbol id="i-archive" viewBox="0 0 24 24"><path d="M4 8.2 5.5 4h13L20 8.2v10.3a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5Z"/><path d="M4 8.2h16"/><path d="M10 12h4"/></symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24"><path d="M5.5 2.8h8L19 8.3v12.9H5.5Z"/><path d="M13.5 2.8v5.5H19"/><path d="M8.5 12h7M8.5 15.5h7M8.5 19h4.5"/></symbol>
+    <symbol id="i-app" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M3 8.5h18M7.5 6h.01M10.3 6h.01"/><path d="M8 13h8M12 13v4"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/><path d="m13.5 4-3 16"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.8"/><path d="M3.5 12h17M12 3.2c2.4 2.4 3.6 5.4 3.6 8.8S14.4 18.4 12 20.8C9.6 18.4 8.4 15.4 8.4 12S9.6 5.6 12 3.2Z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 6.5h16M9 6.5V4.2h6v2.3M6.5 6.5l1 14.3h9l1-14.3"/><path d="M10 10v7M14 10v7"/></symbol>
+    <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M20.2 9A8.5 8.5 0 1 0 20 15"/><path d="M20.5 3.5V9H15"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.7 21.2 20H2.8Z"/><path d="M12 9v4.6M12 17h.01"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 10.8v5.2M12 7.5h.01"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12.2 2.7 2.7 5.5-5.8"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M19 13.5V19a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V6.5A1.5 1.5 0 0 1 5 5h5.5"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="m13.4 2.5-9 11.2h6.3l-.6 7.8 9-11.5h-6.2Z"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 4.8-9 4.8-9-4.8Z"/><path d="m3 12.2 9 4.8 9-4.8"/><path d="m3 16.5 9 4.8 9-4.8"/></symbol>
+    <symbol id="i-drive" viewBox="0 0 24 24"><path d="M4 14.5 6.6 5h10.8L20 14.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/><path d="M4 14.5h16"/><path d="M7 17.2h.01M10 17.2h.01"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2.8 20 6v6c0 4.7-3.2 7.8-8 9.2-4.8-1.4-8-4.5-8-9.2V6Z"/><path d="m8.6 11.8 2.3 2.3 4.6-4.8"/></symbol>
+    <symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="5" y="4.8" width="14" height="16.4" rx="2.3"/><path d="M9 4.8V3.4A1.4 1.4 0 0 1 10.4 2h3.2A1.4 1.4 0 0 1 15 3.4v1.4"/><path d="M8.5 10h7M8.5 13.5h7M8.5 17h4"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.08A1.7 1.7 0 0 0 8.95 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.58 15a1.7 1.7 0 0 0-1.56-1.03H3v-4h.08A1.7 1.7 0 0 0 4.6 8.95a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 10 3.02V3h4v.08a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.56 1.03H21v4h-.08A1.7 1.7 0 0 0 19.4 15Z"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8Z"/><path d="m18.5 15 .8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8Z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.5 2"/></symbol>
+    <symbol id="i-logo" viewBox="0 0 24 24"><path d="M12 3v10.5"/><path d="m6.8 9.5 5.2 5 5.2-5"/><path d="M5.5 20h13"/></symbol>
+  </svg>
+
+  <div class="ambient" aria-hidden="true">
+    <div class="ambient-grid"></div>
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+    <span class="orb orb-c"></span>
+  </div>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-inner">
+        <button class="new-download" id="newDownloadBtn" type="button">
+          <span class="new-download-icon"><svg class="icon"><use href="#i-plus"/></svg></span>
+          <span>新建下载</span>
+          <kbd>Ctrl N</kbd>
+        </button>
+
+        <nav class="nav" aria-label="下载分类">
+          <div class="nav-caption">下载管理</div>
+          <button class="nav-item is-active" data-filter="all" type="button">
+            <span class="nav-icon"><svg class="icon"><use href="#i-all"/></svg></span>
+            <span class="nav-label">全部下载</span>
+            <span class="nav-count" id="countAll">0</span>
+          </button>
+          <button class="nav-item" data-filter="active" type="button">
+            <span class="nav-icon"><svg class="icon"><use href="#i-activity"/></svg></span>
+            <span class="nav-label">正在下载</span>
+            <span class="nav-count accent" id="countActive">0</span>
+          </button>
+          <button class="nav-item" data-filter="paused" type="button">
+            <span class="nav-icon"><svg class="icon"><use href="#i-pause"/></svg></span>
+            <span class="nav-label">已暂停</span>
+            <span class="nav-count" id="countPaused">0</span>
+          </button>
+          <button class="nav-item" data-filter="completed" type="button">
+            <span class="nav-icon"><svg class="icon"><use href="#i-check-circle"/></svg></span>
+            <span class="nav-label">已完成</span>
+            <span class="nav-count" id="countCompleted">0</span>
+          </button>
+          <button class="nav-item" data-filter="error" type="button">
+            <span class="nav-icon"><svg class="icon"><use href="#i-alert"/></svg></span>
+            <span class="nav-label">下载失败</span>
+            <span class="nav-count danger" id="countError">0</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-spacer"></div>
+
+        <div class="engine-card">
+          <div class="engine-head">
+            <span class="engine-orb"><span></span></span>
+            <div class="engine-title">
+              <strong>极速引擎</strong>
+              <span id="engineStatus">已就绪</span>
+            </div>
+            <span class="status-dot" id="engineDot"></span>
+          </div>
+          <div class="engine-meter">
+            <div class="meter-row"><span>活跃连接</span><strong id="sideConnections">0</strong></div>
+            <div class="engine-track"><i id="engineTrack"></i></div>
+          </div>
+          <div class="engine-disk">
+            <span><svg class="icon tiny"><use href="#i-drive"/></svg> 磁盘可用</span>
+            <strong id="sideDiskFree">—</strong>
+          </div>
+        </div>
+
+        <button class="settings-btn" id="openSettingsBtn" type="button">
+          <span class="nav-icon"><svg class="icon"><use href="#i-settings"/></svg></span>
+          <span>设置</span>
+          <kbd>Ctrl ,</kbd>
+        </button>
+
+        <div class="free-ribbon">
+          <svg class="icon tiny"><use href="#i-sparkles"/></svg>
+          <span>永久免费 · 无广告</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main" id="mainScroll">
+      <header class="topbar">
+        <div class="heading-group">
+          <div class="eyebrow"><span class="eyebrow-spark"></span> LUMEN TRANSFER</div>
+          <h1 id="pageTitle">全部下载</h1>
+          <p id="pageSubtitle">所有传输任务，一目了然。</p>
+        </div>
+        <div class="top-actions">
+          <label class="search-box" id="searchBox">
+            <svg class="icon"><use href="#i-search"/></svg>
+            <input id="searchInput" type="search" placeholder="搜索任务" autocomplete="off" spellcheck="false" aria-label="搜索下载任务">
+            <button class="search-clear" id="searchClear" type="button" aria-label="清除搜索" hidden><svg class="icon"><use href="#i-x"/></svg></button>
+            <kbd>Ctrl F</kbd>
+          </label>
+          <button class="icon-button theme-toggle" id="themeToggleBtn" type="button" aria-label="切换深浅模式" title="切换深浅模式（Ctrl Shift L）">
+            <svg class="icon theme-icon icon-moon"><use href="#i-moon"/></svg>
+            <svg class="icon theme-icon icon-sun"><use href="#i-sun"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <section class="quick-card" id="quickCard" aria-label="添加下载">
+          <div class="quick-row">
+            <div class="quick-link-icon"><svg class="icon"><use href="#i-link"/></svg></div>
+            <div class="quick-input-wrap">
+              <textarea id="urlInput" class="quick-input" rows="1" spellcheck="false" placeholder="粘贴 HTTP / HTTPS 下载链接，可一次添加多条" aria-label="下载链接"></textarea>
+              <div class="quick-sub"><span class="pulse-dot"></span> 智能分段下载 <span class="dot-sep">·</span> 自动识别文件名 <span class="dot-sep">·</span> 支持 32 线程</div>
+            </div>
+            <div class="quick-actions">
+              <button class="soft-button" id="pasteBtn" type="button" title="从剪贴板粘贴">
+                <svg class="icon"><use href="#i-clipboard"/></svg><span>粘贴</span>
+              </button>
+              <button class="icon-button" id="advancedBtn" type="button" aria-label="下载选项" title="下载选项">
+                <svg class="icon"><use href="#i-sliders"/></svg>
+              </button>
+              <button class="download-button" id="startBtn" type="button" disabled>
+                <span class="download-button-glow"></span>
+                <svg class="icon"><use href="#i-download"/></svg>
+                <span>开始下载</span>
+                <kbd>Enter</kbd>
+              </button>
+            </div>
+          </div>
+          <div class="quick-footer">
+            <div class="feature-pills">
+              <span><svg class="icon tiny"><use href="#i-layers"/></svg> 多线程加速</span>
+              <span><svg class="icon tiny"><use href="#i-rotate"/></svg> 断点续传</span>
+              <span><svg class="icon tiny"><use href="#i-shield"/></svg> 本地处理</span>
+            </div>
+            <span class="quick-tip">按 <kbd>Enter</kbd> 立即开始 · <kbd>Shift</kbd> + <kbd>Enter</kbd> 换行</span>
+          </div>
+        </section>
+
+        <div class="clipboard-chip" id="clipboardChip" hidden>
+          <span class="clipboard-chip-icon"><svg class="icon"><use href="#i-clipboard"/></svg></span>
+          <div class="clipboard-chip-copy">
+            <span>发现剪贴板链接</span>
+            <strong id="clipboardChipUrl">—</strong>
+          </div>
+          <button class="chip-use" id="clipboardUse" type="button">填入</button>
+          <button class="chip-dismiss" id="clipboardDismiss" type="button" aria-label="忽略"><svg class="icon"><use href="#i-x"/></svg></button>
+        </div>
+
+        <section class="metrics" aria-label="实时概览">
+          <article class="metric-card speed-card">
+            <div class="metric-head">
+              <span class="metric-label">当前速度</span>
+              <span class="live-badge" id="liveBadge"><i></i>LIVE</span>
+            </div>
+            <div class="speed-main">
+              <div class="speed-number"><span id="totalSpeedValue">0.00</span><small id="totalSpeedUnit">MB/s</small></div>
+              <div class="sparkline-wrap" aria-hidden="true">
+                <svg class="sparkline" id="sparkline" viewBox="0 0 168 50" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#5ad7ff" stop-opacity=".34"/>
+                      <stop offset="1" stop-color="#5ad7ff" stop-opacity="0"/>
+                    </linearGradient>
+                    <linearGradient id="sparkStroke" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0" stop-color="#55d8ff"/>
+                      <stop offset=".55" stop-color="#6d9dff"/>
+                      <stop offset="1" stop-color="#b18cff"/>
+                    </linearGradient>
+                  </defs>
+                  <path id="sparkArea" class="spark-area" d="M0 49 L168 49 Z"/>
+                  <path id="sparkLine" class="spark-line" d="M0 49 L168 49"/>
+                  <circle id="sparkDot" class="spark-dot" cx="168" cy="49" r="2.4"/>
+                </svg>
+              </div>
+            </div>
+            <div class="metric-foot">
+              <span><svg class="icon tiny"><use href="#i-activity"/></svg> 实时网络吞吐</span>
+              <strong id="speedConnections">0 个连接</strong>
+            </div>
+          </article>
+
+          <article class="metric-card queue-card">
+            <div class="metric-head">
+              <span class="metric-label">活跃任务</span>
+              <span class="mini-icon"><svg class="icon"><use href="#i-layers"/></svg></span>
+            </div>
+            <div class="queue-main">
+              <div class="queue-number"><span id="activeCount">0</span><small>/ <span id="queueLimit">3</span></small></div>
+              <div class="queue-visual" id="queueVisual" aria-hidden="true"></div>
+            </div>
+            <div class="metric-foot split">
+              <span>队列 <strong id="queuedCount">0</strong></span>
+              <span>暂停 <strong id="pausedCount">0</strong></span>
+            </div>
+          </article>
+
+          <article class="metric-card session-card">
+            <div class="metric-head">
+              <span class="metric-label">本次已下载</span>
+              <span class="mini-icon"><svg class="icon"><use href="#i-bolt"/></svg></span>
+            </div>
+            <div class="session-main">
+              <div class="session-number" id="sessionBytes">0 B</div>
+              <span class="completion-badge" id="completionBadge">+0 完成</span>
+            </div>
+            <div class="disk-meta">
+              <span>磁盘可用 <strong id="diskFree">—</strong></span>
+              <div class="disk-bar"><i id="diskBar"></i></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="list-section">
+          <div class="list-toolbar">
+            <div class="list-title">
+              <h2>任务列表</h2>
+              <span class="count-pill" id="listCount">0</span>
+              <span class="sort-label"><svg class="icon tiny"><use href="#i-activity"/></svg> 自动排序</span>
+            </div>
+            <div class="list-actions">
+              <button class="text-button" id="clearCompletedBtn" type="button">
+                <svg class="icon tiny"><use href="#i-trash"/></svg> 清除已完成
+              </button>
+            </div>
+          </div>
+
+          <div class="task-list" id="taskList" role="list" aria-live="polite"></div>
+
+          <div class="empty-state" id="emptyState" hidden>
+            <div class="empty-visual">
+              <div class="empty-orbit orbit-one"></div>
+              <div class="empty-orbit orbit-two"></div>
+              <div class="empty-core"><svg class="icon"><use href="#i-download"/></svg></div>
+              <span class="empty-dot dot-a"></span>
+              <span class="empty-dot dot-b"></span>
+              <span class="empty-dot dot-c"></span>
+            </div>
+            <h3 id="emptyTitle">还没有下载任务</h3>
+            <p id="emptyText">粘贴一个链接，剩下的交给流光。多线程加速，速度拉满。</p>
+            <button class="empty-cta" id="emptyCta" type="button"><svg class="icon"><use href="#i-link"/></svg> 添加第一个下载</button>
+            <div class="empty-tips" id="emptyTips">
+              <span><svg class="icon tiny"><use href="#i-shield"/></svg> 完全本地</span>
+              <span><svg class="icon tiny"><use href="#i-bolt"/></svg> 极速多线程</span>
+              <span><svg class="icon tiny"><use href="#i-rotate"/></svg> 断点续传</span>
+            </div>
+          </div>
+        </section>
+
+        <footer class="main-footer">
+          <span>流光下载器 <span class="footer-dot">·</span> 直连 HTTP / HTTPS</span>
+          <span class="footer-right">LUMEN ENGINE <span class="footer-dot">·</span> 免费使用</span>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <div class="overlay-scrim" id="settingsScrim" hidden></div>
+  <aside class="sheet" id="settingsSheet" aria-hidden="true" aria-label="设置">
+    <header class="sheet-header">
+      <div>
+        <span class="sheet-kicker">PREFERENCES</span>
+        <h2>设置</h2>
+      </div>
+      <button class="icon-button" id="closeSettingsBtn" type="button" aria-label="关闭设置"><svg class="icon"><use href="#i-x"/></svg></button>
+    </header>
+    <div class="sheet-content">
+      <section class="settings-section">
+        <div class="section-heading"><span class="section-icon"><svg class="icon"><use href="#i-download"/></svg></span><div><h3>下载</h3><p>调整传输引擎的默认行为</p></div></div>
+
+        <div class="setting-block">
+          <div class="setting-label-row"><label>保存位置</label><span class="setting-note">新任务默认保存到这里</span></div>
+          <div class="folder-field">
+            <svg class="icon"><use href="#i-folder"/></svg>
+            <span id="settingsFolderText" title="">—</span>
+            <button class="mini-text-button" id="settingsChooseFolder" type="button">更改</button>
+            <button class="folder-open-button" id="settingsOpenFolder" type="button" aria-label="打开文件夹"><svg class="icon"><use href="#i-external"/></svg></button>
+          </div>
+        </div>
+
+        <div class="setting-block">
+          <div class="setting-label-row"><label for="connectionsRange">每任务连接数</label><strong class="value-badge" id="connectionsValue">16</strong></div>
+          <input type="range" id="connectionsRange" min="1" max="32" step="1" value="16">
+          <div class="range-scale"><span>1</span><span>8</span><span>16</span><span>24</span><span>32</span></div>
+          <p class="setting-help">更多连接通常更快；对连接数有限制的服务器会自动重试。</p>
+        </div>
+
+        <div class="setting-block">
+          <div class="setting-label-row"><label for="concurrentRange">同时下载任务</label><strong class="value-badge" id="concurrentValue">3</strong></div>
+          <input type="range" id="concurrentRange" min="1" max="8" step="1" value="3">
+          <div class="range-scale"><span>1</span><span>3</span><span>5</span><span>8</span></div>
+          <p class="setting-help">同时进行的文件数量，其余任务会进入队列。</p>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <div class="section-heading"><span class="section-icon"><svg class="icon"><use href="#i-sparkles"/></svg></span><div><h3>体验</h3><p>让它更像你自己的下载器</p></div></div>
+
+        <div class="setting-row">
+          <div class="row-copy"><strong>深色 / 浅色模式</strong><span>界面主题，立即生效</span></div>
+          <div class="segmented theme-segments" role="group" aria-label="界面主题">
+            <button type="button" data-theme-choice="dark"><svg class="icon tiny"><use href="#i-moon"/></svg>深色</button>
+            <button type="button" data-theme-choice="light"><svg class="icon tiny"><use href="#i-sun"/></svg>浅色</button>
+            <button type="button" data-theme-choice="system"><svg class="icon tiny"><use href="#i-monitor"/></svg>自动</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="row-copy"><strong>完成提示音</strong><span>下载完成时播放轻提示音</span></div>
+          <label class="switch"><input type="checkbox" id="soundToggle"><span class="switch-track"></span><span class="sr-only">完成提示音</span></label>
+        </div>
+
+        <div class="setting-row">
+          <div class="row-copy"><strong>识别剪贴板链接</strong><span>窗口激活时提示可下载链接</span></div>
+          <label class="switch"><input type="checkbox" id="clipboardToggle"><span class="switch-track"></span><span class="sr-only">识别剪贴板链接</span></label>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <details class="advanced-settings">
+          <summary>
+            <span class="section-heading compact"><span class="section-icon"><svg class="icon"><use href="#i-sliders"/></svg></span><div><h3>高级</h3><p>请求头与安全选项</p></div></span>
+            <svg class="icon chevron"><use href="#i-chevron-down"/></svg>
+          </summary>
+          <div class="advanced-content">
+            <div class="setting-row">
+              <div class="row-copy"><strong>允许无效 HTTPS 证书</strong><span class="warn-text">不安全，仅用于可信站点</span></div>
+              <label class="switch"><input type="checkbox" id="insecureToggle"><span class="switch-track"></span><span class="sr-only">允许无效 HTTPS 证书</span></label>
+            </div>
+            <div class="setting-block">
+              <div class="setting-label-row"><label for="uaInput">默认 User-Agent</label><button class="mini-text-button" id="resetUaBtn" type="button">恢复默认</button></div>
+              <textarea class="text-field mono" id="uaInput" rows="3" spellcheck="false" placeholder="Mozilla/5.0 ..."></textarea>
+              <p class="setting-help">用于新任务。部分站点会检查浏览器标识。</p>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <section class="about-card">
+        <div class="about-mark"><svg class="icon"><use href="#i-logo"/></svg></div>
+        <div class="about-copy">
+          <strong>流光下载器 <span id="aboutVersion">v1.0.0</span></strong>
+          <span>多线程 HTTP / HTTPS 直连下载引擎</span>
+          <p>永久免费 · 无广告 · 无捆绑 · 完全本地处理</p>
+        </div>
+        <span class="free-stamp">FREE</span>
+      </section>
+
+      <div class="settings-footer">
+        <span><span class="save-dot"></span> 设置会自动保存</span>
+        <span class="shortcuts-mini"><kbd>Ctrl N</kbd> 新建 <kbd>Ctrl ,</kbd> 设置</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="modal-layer" id="optionsLayer" hidden>
+    <div class="modal-scrim" data-close-options></div>
+    <section class="modal options-modal" role="dialog" aria-modal="true" aria-labelledby="optionsTitle">
+      <header class="modal-header">
+        <div>
+          <span class="sheet-kicker">NEW TRANSFER</span>
+          <h2 id="optionsTitle">新建下载</h2>
+          <p>多链接批量添加，自动进入队列。</p>
+        </div>
+        <button class="icon-button" id="closeOptionsBtn" type="button" aria-label="关闭"><svg class="icon"><use href="#i-x"/></svg></button>
+      </header>
+      <div class="modal-body">
+        <div class="field-group">
+          <div class="field-label"><label for="optionsUrls">下载链接</label><span>每行一个链接</span></div>
+          <textarea class="text-field url-field" id="optionsUrls" rows="4" spellcheck="false" placeholder="https://example.com/file.zip&#10;https://example.com/video.mp4"></textarea>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label"><label>保存到</label><button class="mini-text-button" id="chooseOptionsFolder" type="button">更改</button></div>
+            <div class="compact-folder"><svg class="icon"><use href="#i-folder"/></svg><span id="optionsFolderText">—</span></div>
+          </div>
+          <div class="field-group filename-group">
+            <div class="field-label"><label for="optionsFilename">文件名</label><span>可选</span></div>
+            <input class="text-field" id="optionsFilename" type="text" spellcheck="false" placeholder="自动识别">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label"><label>每个任务连接数</label><span>推荐 16</span></div>
+          <div class="connection-chips" id="connectionChips">
+            <button type="button" data-connections="8">8 线程</button>
+            <button type="button" data-connections="16" class="is-active">16 线程</button>
+            <button type="button" data-connections="24">24 线程</button>
+            <button type="button" data-connections="32">32 线程</button>
+          </div>
+        </div>
+
+        <details class="advanced-settings modal-advanced">
+          <summary>
+            <span class="advanced-summary"><svg class="icon"><use href="#i-sliders"/></svg> 自定义请求头 <span class="optional">可选</span></span>
+            <svg class="icon chevron"><use href="#i-chevron-down"/></svg>
+          </summary>
+          <div class="advanced-content">
+            <div class="field-row">
+              <div class="field-group">
+                <div class="field-label"><label for="optionsReferer">Referer</label></div>
+                <input class="text-field" id="optionsReferer" type="text" spellcheck="false" placeholder="https://example.com/page">
+              </div>
+              <div class="field-group">
+                <div class="field-label"><label for="optionsCookie">Cookie</label></div>
+                <input class="text-field" id="optionsCookie" type="text" spellcheck="false" placeholder="name=value; ...">
+              </div>
+            </div>
+            <div class="field-group">
+              <div class="field-label"><label for="optionsHeaders">自定义请求头</label><span>每行一个 Header: Value</span></div>
+              <textarea class="text-field mono" id="optionsHeaders" rows="3" spellcheck="false" placeholder="Authorization: Bearer ..."></textarea>
+            </div>
+            <p class="field-hint"><svg class="icon tiny"><use href="#i-info"/></svg> 请求头仅用于本次任务，不会上传到任何服务器。</p>
+          </div>
+        </details>
+      </div>
+      <footer class="modal-footer">
+        <span class="modal-footnote"><span class="pulse-dot"></span> 自动跟随重定向并支持断点续传</span>
+        <div class="modal-buttons">
+          <button class="ghost-button" id="cancelOptionsBtn" type="button">取消</button>
+          <button class="download-button modal-submit" id="submitOptionsBtn" type="button"><svg class="icon"><use href="#i-download"/></svg><span>开始下载</span></button>
+        </div>
+      </footer>
+    </section>
+  </div>
+
+  <div class="modal-layer" id="confirmLayer" hidden>
+    <div class="modal-scrim" data-close-confirm></div>
+    <section class="modal confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
+      <div class="confirm-icon" id="confirmIcon"><svg class="icon"><use href="#i-alert"/></svg></div>
+      <h2 id="confirmTitle">移除任务？</h2>
+      <p id="confirmMessage">相关临时文件会被删除。</p>
+      <div class="confirm-actions">
+        <button class="ghost-button" id="confirmCancelBtn" type="button">取消</button>
+        <button class="danger-button" id="confirmOkBtn" type="button">确认移除</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="drop-overlay" id="dropOverlay" hidden>
+    <div class="drop-card">
+      <div class="drop-icon"><svg class="icon"><use href="#i-download"/></svg></div>
+      <h2>松手，开始极速下载</h2>
+      <p>支持一次拖入多条 HTTP / HTTPS 链接</p>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="false"></div>
+
+  <template id="taskTemplate">
+    <article class="task-card" role="listitem">
+      <div class="file-visual" data-file-icon>
+        <svg class="icon file-kind-icon"><use href="#i-file"/></svg>
+        <span class="file-ext">FILE</span>
+        <span class="complete-mark"><svg class="icon"><use href="#i-check"/></svg></span>
+      </div>
+      <div class="task-main">
+        <div class="task-top">
+          <div class="task-title-block">
+            <button class="task-name" data-action="primary" type="button"></button>
+            <span class="status-chip" data-status><i></i><span></span></span>
+          </div>
+          <div class="task-actions">
+            <button class="task-action" data-action="toggle" type="button" title="暂停"><svg class="icon" data-toggle-icon><use href="#i-pause"/></svg></button>
+            <button class="task-action" data-action="folder" type="button" title="打开所在文件夹"><svg class="icon"><use href="#i-folder"/></svg></button>
+            <button class="task-action danger" data-action="remove" type="button" title="移除任务"><svg class="icon"><use href="#i-trash"/></svg></button>
+          </div>
+        </div>
+        <div class="task-sub">
+          <span class="task-host"><svg class="icon tiny"><use href="#i-globe"/></svg><span data-host></span></span>
+          <span class="sub-sep">·</span>
+          <span class="task-detail" data-detail>等待开始</span>
+          <span class="sub-sep" data-message-sep hidden>·</span>
+          <span class="task-message" data-message hidden></span>
+        </div>
+        <div class="progress-row">
+          <div class="progress-track" data-progress-track>
+            <div class="progress-fill" data-progress-fill></div>
+            <span class="progress-sheen"></span>
+          </div>
+          <span class="progress-text" data-progress-text>0%</span>
+        </div>
+        <div class="task-meta">
+          <span data-size>—</span>
+          <span class="meta-sep">·</span>
+          <span data-speed hidden>—</span>
+          <span class="meta-sep" data-speed-sep hidden>·</span>
+          <span data-eta hidden>—</span>
+          <span class="meta-sep" data-eta-sep hidden>·</span>
+          <span class="threads-pill" data-threads hidden><svg class="icon tiny"><use href="#i-bolt"/></svg><span>—</span></span>
+          <span class="meta-spacer"></span>
+          <button class="open-file-link" data-action="primary" type="button" hidden><svg class="icon tiny"><use href="#i-external"/></svg> 打开文件</button>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>

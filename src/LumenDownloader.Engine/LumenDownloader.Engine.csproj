@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>12.0</LangVersion>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AssemblyName>LumenDownloader.Engine</AssemblyName>
+    <RootNamespace>LumenDownloader.Engine</RootNamespace>
+  </PropertyGroup>
+
+</Project>
